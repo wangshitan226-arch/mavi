@@ -8,6 +8,7 @@ content_image_paths: string[]
 - 图片数量不限制
 - 顺序即目录页顺序（这一点很重要，后面会用）
 **输出：**
+''' 
 TextBlock {
     block_id: string                // 稳定唯一ID，后续所有阶段都用它
     text: string                    // 原始OCR文本，不做任何清洗
@@ -16,6 +17,7 @@ TextBlock {
     source_image_index: int         // 第几张目录图（0-based）
     line_index?: int                // 在该图中的大致行序（可选但强烈建议）
 }
+''' 
 **保证：**
 - 只做 OCR，不做语义、不猜标题
 - 多张目录图全部处理，不因失败中断整体
