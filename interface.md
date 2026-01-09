@@ -19,21 +19,14 @@ content_image_paths: string[]
 **输出：**
 
 
-TextBlock {
-
-    block_id: string                // 稳定唯一ID，后续所有阶段都用它
-
-    text: string                    // 原始OCR文本，不做任何清洗
-
-    bbox?: BoundingBox              // 可选，允许无坐标OCR
-
-    source_image_id: string         // 对应哪一页目录图
-
-    source_image_index: int         // 第几张目录图（0-based）
-
-    line_index?: int                // 在该图中的大致行序（可选但强烈建议）
-
-}
+    TextBlock {
+        block_id: string                // 稳定唯一ID，后续所有阶段都用它
+        text: string                    // 原始OCR文本，不做任何清洗
+        bbox?: BoundingBox              // 可选，允许无坐标OCR
+        source_image_id: string         // 对应哪一页目录图
+        source_image_index: int         // 第几张目录图（0-based）
+        line_index?: int                // 在该图中的大致行序（可选但强烈建议）
+    }
 
 
 **保证：**
@@ -66,39 +59,25 @@ TextBlock {
 
 **输入：**
 
-TextBlock {
-
-    block_id: string                // 稳定唯一ID，后续所有阶段都用它
-
-    text: string                    // 原始OCR文本，不做任何清洗
-
-    bbox?: BoundingBox              // 可选，允许无坐标OCR
-
-    source_image_id: string         // 对应哪一页目录图
-
-    source_image_index: int         // 第几张目录图（0-based）
-
-    line_index?: int                // 在该图中的大致行序（可选但强烈建议）
-
-}
+    TextBlock {
+        block_id: string                // 稳定唯一ID，后续所有阶段都用它
+        text: string                    // 原始OCR文本，不做任何清洗
+        bbox?: BoundingBox              // 可选，允许无坐标OCR
+        source_image_id: string         // 对应哪一页目录图
+        source_image_index: int         // 第几张目录图（0-based）
+        line_index?: int                // 在该图中的大致行序（可选但强烈建议）
+    }
 
 **输出：**
 
-TitleCandidate {
-
-    candidate_id: string            // 新ID，不要复用 block_id
-
-    source_block_id: string         // 来自哪个 TextBlock
-
-    text: string                    // 原文，允许和 TextBlock.text 一致
-
-    level_guess?: int | null        // 章节层级猜测（1,2,3...）
-
-    confidence?: float              // 0~1，允许不存在
-
-    cues?: string[]                 // 判断依据，如 "编号前缀", "字体推测", "对齐"
-
-}
+    TitleCandidate {
+        candidate_id: string            // 新ID，不要复用 block_id
+        source_block_id: string         // 来自哪个 TextBlock
+        text: string                    // 原文，允许和 TextBlock.text 一致
+        level_guess?: int | null        // 章节层级猜测（1,2,3...）
+        confidence?: float              // 0~1，允许不存在
+        cues?: string[]                 // 判断依据，如 "编号前缀", "字体推测", "对齐"
+    }
 
 **保证：**
 
@@ -124,41 +103,26 @@ TitleCandidate {
 
 **输入：**
 
-TitleCandidate {
-
-    candidate_id: string            // 新ID，不要复用 block_id
-
-    source_block_id: string         // 来自哪个 TextBlock
-
-    text: string                    // 原文，允许和 TextBlock.text 一致
-
-    level_guess?: int | null        // 章节层级猜测（1,2,3...）
-
-    confidence?: float              // 0~1，允许不存在
-
-    cues?: string[]                 // 判断依据，如 "编号前缀", "字体推测", "对齐"
-
-}
+    TitleCandidate {
+        candidate_id: string            // 新ID，不要复用 block_id
+        source_block_id: string         // 来自哪个 TextBlock
+        text: string                    // 原文，允许和 TextBlock.text 一致
+        level_guess?: int | null        // 章节层级猜测（1,2,3...）
+        confidence?: float              // 0~1，允许不存在
+        cues?: string[]                 // 判断依据，如 "编号前缀", "字体推测", "对齐"
+    }
 
 **输出：**
 
-ChapterNode {
-
-    node_id: string
-
-    title_text: string
-
-    level: int                     // 最终确定的层级
-
-    order_index: int               // 在全目录中的顺序
-
-    source_candidate_ids: string[] // 可能多个候选合并而来
-
-    parent_id?: string | null
-
-    children?: ChapterNode[]
-
-}
+    ChapterNode {
+        node_id: string
+        title_text: string
+        level: int                     // 最终确定的层级
+        order_index: int               // 在全目录中的顺序
+        source_candidate_ids: string[] // 可能多个候选合并而来
+        parent_id?: string | null
+        children?: ChapterNode[]
+    }
 
 **保证：**
 
@@ -192,27 +156,17 @@ pdf_path
 
 **输出：**
 
-PageBlock {
-
-    page_index: int
-
-    text_blocks: ContentBlock[]
-
-}
-
-ContentBlock {
-
-    block_id: string
-
-    type: "text" | "formula" | "image" | "table"
-
-    content: string              // text 原文 / latex / image_path / table_repr
-
-    bbox?: BoundingBox
-
-    order_index: int             // 在页面内的物理顺序
-
-}
+    PageBlock {
+        page_index: int
+        text_blocks: ContentBlock[]
+    }
+    ContentBlock {
+        block_id: string
+        type: "text" | "formula" | "image" | "table"
+        content: string              // text 原文 / latex / image_path / table_repr
+        bbox?: BoundingBox
+        order_index: int             // 在页面内的物理顺序
+    }
 
 **保证：**
 
@@ -248,33 +202,19 @@ ContentBlock {
 
 **输出：**
 
-ContextCandidate {
-
-    candidate_id: string
-
-    block_id: string
-
-    page_index: int
-
-    type: ContentBlock["type"]
-
-    content: string
-
-
-
-    chapter_scores: {
-
-        chapter_id: string
-
-        score: float
-
-        cues?: string[]
-
-    }[]
-
-    unresolved?: boolean          // 明确标记：我真的不知道
-
-}
+    ContextCandidate {
+        candidate_id: string
+        block_id: string
+        page_index: int
+        type: ContentBlock["type"]
+        content: string
+        chapter_scores: {
+            chapter_id: string
+            score: float
+            cues?: string[]
+        }[]
+        unresolved?: boolean
+    }
 
 **保证：**
 
@@ -304,39 +244,22 @@ ContextCandidate[]
 
 **输出：**
 
-ChapterContext {
-
-    chapter_id: string
-
-    page_start: int
-
-    page_end: int
-
-
-
-    blocks: {
-
-        text: BlockRef[]
-
-        formula: BlockRef[]
-
-        image: BlockRef[]
-
-        table: BlockRef[]
-
+    ChapterContext {
+        chapter_id: string
+        page_start: int
+        page_end: int
+        blocks: {
+            text: BlockRef[]
+            formula: BlockRef[]
+            image: BlockRef[]
+            table: BlockRef[]
+        }
     }
-
-}
-
-BlockRef {
-
-    block_id: string
-
-    content: string
-
-    page_index: int
-
-}
+    BlockRef {
+        block_id: string
+        content: string
+        page_index: int
+    }
 
 **保证：**
 
@@ -371,31 +294,18 @@ ContextCandidate[]
 **输出：**
 
     MergedNode {
-
         merged_id: string
-
         chapter_id: string
-
         title_text: string
-
         level: int
-
         page_start: int
-
         page_end: int
-
         context_block_ids: string[]
-
         confidence: float
-
         conflicts?: {
-
             type: string
-
             detail: string
-
         }[]
-
     }
 
 **保证：**
@@ -421,49 +331,42 @@ ContextCandidate[]
 **输入：**
 
     materialize_structure_tree(
-
-    merged_nodes: MergedNode[],
-
-    options?: {
-
-        strategy?: "auto" | "conservative" | "aggressive"
-
-        min_confidence?: number
-
-        allow_manual_override?: boolean
-
-    }
-
+        merged_nodes: MergedNode[],
+        options?: {
+            strategy?: "auto" | "conservative" | "aggressive"
+            min_confidence?: number
+            allow_manual_override?: boolean
+        }
     )
 
 **输出:**
 
     MaterializedChapterNode {
-    id: string                     // 稳定、可引用
-    title_text: string
-    level: int
-    page_start: int
-    page_end: int
-    parent_id?: string
-    children_ids?: string[]
-    context_block_ids: string[]    // 正文锚点
-    confidence: float              // 冻结后的综合置信度
-    provenance: {
-        source_titles: string[]      // 来自哪些目录/标题证据
-        source_pages: number[]       // 来自哪些页面
-    }
+        id: string                     // 稳定、可引用
+        title_text: string
+        level: int
+        page_start: int
+        page_end: int
+        parent_id?: string
+        children_ids?: string[]
+        context_block_ids: string[]    // 正文锚点
+        confidence: float              // 冻结后的综合置信度
+        provenance: {
+            source_titles: string[]      // 来自哪些目录/标题证据
+            source_pages: number[]       // 来自哪些页面
+        }
     }
 
     MaterializedStructureTree {
-    version_id: string
-    generated_at: timestamp
-    strategy: string
-    chapters: MaterializedChapterNode[]
-    root_ids: string[]
-    unresolved_nodes?: {
-        id: string
-        reason: string
-    }[]
+        version_id: string
+        generated_at: timestamp
+        strategy: string
+        chapters: MaterializedChapterNode[]
+        root_ids: string[]
+        unresolved_nodes?: {
+            id: string
+            reason: string
+        }[]
     }
 
 **保证:**
