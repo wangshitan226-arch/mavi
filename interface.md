@@ -370,33 +370,33 @@ ContextCandidate[]
 
 **输出：**
 
-MergedNode {
+    MergedNode {
 
-    merged_id: string
+        merged_id: string
 
-    chapter_id: string
+        chapter_id: string
 
-    title_text: string
+        title_text: string
 
-    level: int
+        level: int
 
-    page_start: int
+        page_start: int
 
-    page_end: int
+        page_end: int
 
-    context_block_ids: string[]
+        context_block_ids: string[]
 
-    confidence: float
+        confidence: float
 
-    conflicts?: {
+        conflicts?: {
 
-        type: string
+            type: string
 
-        detail: string
+            detail: string
 
-    }[]
+        }[]
 
-}
+    }
 
 **保证：**
 
@@ -420,131 +420,81 @@ MergedNode {
 
 **输入：**
 
-materialize_structure_tree(
+    materialize_structure_tree(
 
-  merged_nodes: MergedNode[],
+    merged_nodes: MergedNode[],
 
-  options?: {
+    options?: {
 
-    strategy?: "auto" | "conservative" | "aggressive"
+        strategy?: "auto" | "conservative" | "aggressive"
 
-    min_confidence?: number
+        min_confidence?: number
 
-    allow_manual_override?: boolean
+        allow_manual_override?: boolean
 
-  }
+    }
 
-)
-
-**参数解释**
-
-merged_nodes
-
-    来自 merge_structure_evidence
-
-    允许存在冲突、重叠、低置信度
-
-strategy
-
-    "auto"（默认）：平衡覆盖率与准确率
-
-    "conservative"：宁缺毋滥，低置信度节点不入树
-
-    "aggressive"：尽量保留，适合探索阶段
-
-min_confidence
-
-    默认例如 0.6
-
-    小于该值的节点不会进入最终树
-
-    allow_manual_override
-
-    是否允许后续人工调整（只是标记，不是实现）
+    )
 
 **输出:**
 
-MaterializedChapterNode {
+    MaterializedChapterNode {
+    id: string                     // 稳定、可引用
+    title_text: string
+    level: int
+    page_start: int
+    page_end: int
+    parent_id?: string
+    children_ids?: string[]
+    context_block_ids: string[]    // 正文锚点
+    confidence: float              // 冻结后的综合置信度
+    provenance: {
+        source_titles: string[]      // 来自哪些目录/标题证据
+        source_pages: number[]       // 来自哪些页面
+    }
+    }
 
-  id: string                     // 稳定、可引用
-
-  title_text: string
-
-  level: int
-
-  page_start: int
-
-  page_end: int
-
-  parent_id?: string
-
-  children_ids?: string[]
-
-  context_block_ids: string[]    // 正文锚点
-
-  confidence: float              // 冻结后的综合置信度
-
-  provenance: {
-
-    source_titles: string[]      // 来自哪些目录/标题证据
-
-    source_pages: number[]       // 来自哪些页面
-
-  }
-
-}
-
-MaterializedStructureTree {
-
-  version_id: string
-
-  generated_at: timestamp
-
-  strategy: string
-
-  chapters: MaterializedChapterNode[]
-
-  root_ids: string[]
-
-  unresolved_nodes?: {
-
-    id: string
-
-    reason: string
-
-  }[]
-
-}
+    MaterializedStructureTree {
+    version_id: string
+    generated_at: timestamp
+    strategy: string
+    chapters: MaterializedChapterNode[]
+    root_ids: string[]
+    unresolved_nodes?: {
+        id: string
+        reason: string
+    }[]
+    }
 
 **保证:**
 
-    所有 id 在当前版本内唯一且稳定
+- 所有 id 在当前版本内唯一且稳定
 
-    page_start ≤ page_end
+- page_start ≤ page_end
 
-    树结构无环
+- 树结构无环
 
-    所有 parent_id 必然存在于同一输出中
+- 所有 parent_id 必然存在于同一输出中
 
-    输出结果可直接用于笔记挂载与可视化
+- 输出结果可直接用于笔记挂载与可视化
 
 **不保证:**
 
-    章节层级完全符合教材原意
+- 章节层级完全符合教材原意
 
-    页码边界完全精确
+- 页码边界完全精确
 
-    所有目录标题都被成功实体化
+- 所有目录标题都被成功实体化
 
-    confidence 具备概率意义
+- confidence 具备概率意义
 
 **失败处理：**
 
-    返回空 chapters
+- 返回空 chapters
 
-    填充 unresolved_nodes
+- 填充 unresolved_nodes
 
-    保留 version_id 以便排错
+- 保留 version_id 以便排错
 
 
 
