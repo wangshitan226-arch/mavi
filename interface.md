@@ -61,7 +61,7 @@ TextBlock {
 - 全部失败 → 返回 []
 
 
-
+---
 ### 阶段接口二：detect_title_candidates
 
 **输入：**
@@ -119,12 +119,12 @@ TitleCandidate {
 - 构建失败时，返回空 TitleCandidate 列表
 
 
-
+---
 ### 阶段接口三：build_structure_tree
 
 **输入：**
 
-- TitleCandidate {
+TitleCandidate {
 
     candidate_id: string            // 新ID，不要复用 block_id
 
@@ -142,7 +142,7 @@ TitleCandidate {
 
 **输出：**
 
-- ChapterNode {
+ChapterNode {
 
     node_id: string
 
@@ -188,7 +188,7 @@ TitleCandidate {
 
 **输入：**
 
-- pdf_path
+pdf_path
 
 **输出：**
 
@@ -235,7 +235,7 @@ ContentBlock {
 - 全部失败 → 返回 []
 
 
-
+---
 ### 阶段接口二：detect_context_candidates
 
 **输入：**
@@ -248,7 +248,7 @@ ContentBlock {
 
 **输出：**
 
-- ContextCandidate {
+ContextCandidate {
 
     candidate_id: string
 
@@ -295,16 +295,16 @@ ContentBlock {
 - 单 block 无法判断 → unresolved = true，而不是丢弃
 
 
-
+---
 ### 阶段接口三：classify_context_by_chapter
 
 **输入：**
 
-- ContextCandidate[] 
+ContextCandidate[] 
 
 **输出：**
 
-- ChapterContext {
+ChapterContext {
 
     chapter_id: string
 
@@ -357,16 +357,16 @@ BlockRef {
 - 构建失败时，返回空
 
 
-
+---
 ### 阶段接口四：merge_structure_evidence
 
 **输入：**
 
-- ChapterContext[] 
+ChapterContext[] 
 
-- ChapterNode[]
+ChapterNode[]
 
-- ContextCandidate[]  
+ContextCandidate[]  
 
 **输出：**
 
@@ -415,12 +415,12 @@ MergedNode {
 - 构建失败时，返回空
 
 
-
+---
 ### 阶段接口五：materialize_structure_tree
 
 **输入：**
 
-- materialize_structure_tree(
+materialize_structure_tree(
 
   merged_nodes: MergedNode[],
 
@@ -464,7 +464,7 @@ min_confidence
 
 **输出:**
 
-- MaterializedChapterNode {
+MaterializedChapterNode {
 
   id: string                     // 稳定、可引用
 
@@ -494,7 +494,7 @@ min_confidence
 
 }
 
-- MaterializedStructureTree {
+MaterializedStructureTree {
 
   version_id: string
 
