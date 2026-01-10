@@ -399,5 +399,122 @@ ContextCandidate[]
 
 - 保留 version_id 以便排错
 
+---
 
+## 模块二 教材内容语义单元化
+
+## 接口
+
+**输入：**
+
+    MaterializedChapterNode {
+        id: string                     // 稳定、可引用
+        title_text: string
+        level: int
+        page_start: int
+        page_end: int
+        parent_id?: string
+        children_ids?: string[]
+        context_block_ids: string[]    // 正文锚点
+        confidence: float              // 冻结后的综合置信度
+        provenance: {
+            source_titles: string[]      // 来自哪些目录/标题证据
+            source_pages: number[]       // 来自哪些页面
+        }
+    }
+
+    MaterializedStructureTree {
+        version_id: string
+        generated_at: timestamp
+        strategy: string
+        chapters: MaterializedChapterNode[]
+        root_ids: string[]
+        unresolved_nodes?: {
+            id: string
+            reason: string
+        }[]
+    }
+
+**输出：**
+
+    SemanticStructureTree {
+        version_id: string
+        generated_at: timestamp
+        derived_from_version: string     // 指向输入 structure version
+        chapters: SemanticChapterNode[]
+        root_ids: string[]
+        unresolved_nodes?: {
+            id: string
+            reason: string
+        }[]
+    }
+
+    SemanticChapterNode {
+        id: string                      // 与结构节点一致，保证可追溯
+        title_text: string
+        level: int
+        page_start: int
+        page_end: int
+        parent_id?: string
+        children_ids?: string[]
+
+        object_ids: string[]            // 语义对象锚点（替代 block）
+        confidence: float
+
+        provenance: {
+            source_titles: string[]
+            source_pages: number[]
+            source_block_ids: string[]  // 明确来自哪些 block
+        }
+    }
+
+    ContentObject {
+        id: string
+        chapter_id: string              // 出生即绑定章节，不可更改
+
+        block_ids: string[]             // 构成该对象的最小单元
+        type: "knowledge_text" | "example" | "exercise"
+
+        content: string                 // 已合并、顺序整理后的内容
+        bbox?: BoundingBox[]             // 可选，按 block 聚合
+        order_index: number              // 在章节内的物理顺序
+
+        confidence: float
+    }
+
+    ObjectCandidate {
+        id: string
+        block_ids: string[]              // 单 block 或弱聚合
+        page_index: number
+
+        predicted_type?: ContentObject["type"]
+
+        assignment_trace: {
+            chapter_id: string
+            score: number
+            cues?: string[]
+        }[]
+
+        resolved_object_id?: string     // 若被吸收进某 ContentObject
+        unresolved: boolean             // 未能稳定归并
+    }
+
+
+**保证：**
+
+- 输出的树结构不变
+
+- 每个对象可能包含多个类型的block_id，但是一个对象的组成单元一定来自同一个最小标题分组下
+
+**不保证：**
+
+- 对象里的组成（图片、表格、题目）一定是搭配的
+
+**失败处理**
+
+- 返回空 chapters
+
+- 填充 unresolved_nodes
+
+- 保留 version_id 以便排错
 
