@@ -403,7 +403,7 @@ ContextCandidate[]
 
 ## 模块二 教材内容语义单元化
 
-## 接口
+## 接口： SemanticStructureTree
 
 **输入：**
 
@@ -512,9 +512,321 @@ ContextCandidate[]
 
 **失败处理**
 
-- 返回空 chapters
+- 返回空 chaptersxia
 
 - 填充 unresolved_nodes
 
 - 保留 version_id 以便排错
 
+---
+
+## 模块三 题目理解与知识点映射
+
+## 接口一：QuestionAnalysis
+
+**输入：**
+
+question_image_path:string
+
+**输出：**
+
+    QuestionAnalysis {
+        question_id: string
+        question_text: string
+
+        analysis_units: {
+            inferred_chapter_level: int        // 预期匹配的章节层级（如 1 / 2）
+            semantic_cues: string[]             // 关键词、公式、概念线索
+            reasoning_steps?: string[]          // 可选，给人看的推理
+        }[]
+    }
+
+
+**保证**
+
+- 为应对综合类数学题，question_analysis最小单元要以章节树一级标题为细粒度
+
+- 只分析，不匹配
+
+**不保证**
+
+- 分析结果一定准确
+
+**失败返回**
+
+- 空QuestionAnalysis
+
+## 接口二：KnowledgeMatchCandidate
+
+**输入：**
+
+QuestionAnalysis
+
+SemanticStructureTree
+
+**输出：**
+
+    KnowledgeMatchCandidate {
+        question_id: string
+
+        candidates: {
+            chapter_id: string
+            score: float
+            cues: string[]          // 命中依据：关键词、公式、语义线索
+            conflict_notes?: string[] // 为什么可能不匹配
+        }[]
+
+        guidance: {
+            summary: string          // 给用户的一句话说明
+            suggestion?: string      // 是否建议新建章节
+        }
+    }
+
+
+**保证**
+
+- 只匹配，不确认
+
+- 当候选为空时，保证匹配说明中有明确解释以及匹配建议（供用户自定义新开一节）
+
+**不保证**
+
+- 匹配结果一定准确
+
+**失败返回**
+
+- 空KnowledgeMatchCandidate
+
+## 接口三：KnowledgeMatchResult
+
+**输入：**
+
+KnowledgeMatchCandidate
+
+SemanticStructureTree
+
+user_choice
+
+**输出：**
+
+    KnowledgeMatchStructureTree{
+        version_id: string
+        generated_at: timestamp
+        derived_from_version: string     // 指向输入 structure version
+        chapters: SemanticChapterNode[]
+        root_ids: string[]
+        unresolved_nodes?: {
+            id: string
+            reason: string
+        }[]
+    }
+
+    SemanticChapterNode {
+        id: string                      // 与结构节点一致，保证可追溯
+        title_text: string
+        question_ids?:string[]               //挂载在node层级下
+        level: int
+        page_start: int
+        page_end: int
+        parent_id?: string
+        children_ids?: string[]
+
+        object_ids: string[]            // 语义对象锚点（替代 block）
+        confidence: float
+
+        provenance: {
+            source_titles: string[]
+            source_pages: number[]
+            source_block_ids: string[]  // 明确来自哪些 block
+        }
+    }
+
+**保证**
+
+- 最终挂载位置由用户确定
+
+- 输出的树结构不变，只做挂载
+
+**不保证**
+
+- 挂载位置一定存在
+
+**失败返回**
+
+- 原样SemanticStructureTree
+
+---
+
+## 模块四 解题与认知价值提取
+
+## 接口一：SolveQuestion
+
+**输入：**
+
+QuestionAnalysis        //目的是获得question_text，减少OCR频率
+
+**输出：**
+
+    SolveQuestion {
+        question_id: string
+
+        steps: {
+            step_id: string
+            content: string          // 本步骤做了什么
+            formulas?: string[]      // 用到的公式
+            reasoning_type?: "algebra" | "geometry" | "logic" | "transformation"
+            order_index: number
+        }[]
+
+        final_answer: string
+    }
+
+**保证**
+
+- 只解题，不做价值提取
+
+- 答案流程规范
+
+**不保证**
+
+- unknow
+
+**失败处理**
+
+- 输出空
+
+## 接口二：ValueExtration
+
+**输入：**
+
+SolveQuestion        //获取answer
+
+**输出：**
+
+    StepValueAnnotation {
+        question_id: string
+
+        step_annotations: {
+            step_id: string
+            is_valuable: boolean
+            difficulty_note?: string
+            confidence: float
+            value_type?: "common_trick" | "key_transformation" | "error_prone"
+        }[]
+    }
+
+
+**保证**
+
+- 难点说明要对应于步骤，方便step作分割资产记录
+
+- 加一些可信度
+
+**不保证**
+
+- 可信度一定准确
+
+**失败处理**
+
+- 输出空
+
+## 接口三 StepsMatchCandidate
+
+**输入：**
+
+ValueExtration
+
+**输出：**
+
+    StepsMatchCandidate {
+        question_id: string
+        steps_id:string
+        candidates: {
+            chapter_id: string
+            score: float
+            cues: string[]          // 命中依据：关键词、公式、语义线索
+            conflict_notes?: string[] // 为什么可能不匹配
+            relation_type: "belongs_to" | "applies_concept"
+        }[]
+
+        guidance: {
+            summary: string          // 给用户的一句话说明
+            suggestion?: string      // 是否建议新建章节
+        }
+    }
+
+**保证**
+
+- 只匹配，不确认
+
+**不保证**
+
+- 匹配一定准确
+
+**失败处理**
+
+- 输出空
+
+
+## 接口四： StepsMatchStructureTree
+
+**输入：**
+
+StepsMatchCandidate
+
+KnowledgeMatchStructureTree
+
+user_choice
+
+**输出：**
+
+    StepsMatchStructureTree{
+        version_id: string
+        generated_at: timestamp
+        derived_from_version: string     // 指向输入 structure version
+        chapters: SemanticChapterNode[]
+        root_ids: string[]
+        unresolved_nodes?: {
+            id: string
+            reason: string
+        }[]
+    }
+
+    SemanticChapterNode {
+        id: string                      // 与结构节点一致，保证可追溯
+        title_text: string
+        question_ids?:string[]
+        attached_steps?: {
+            step_id: string
+            source_question_id: string
+            confidence: float
+        }[]
+        level: int
+        page_start: int
+        page_end: int
+        parent_id?: string
+        children_ids?: string[]
+
+        object_ids: string[]            // 语义对象锚点（替代 block）
+        confidence: float
+
+        provenance: {
+            source_titles: string[]
+            source_pages: number[]
+            source_block_ids: string[]  // 明确来自哪些 block
+        }
+    }
+
+**保证**
+
+- 最终挂载位置由用户确定
+
+- 输出的树结构不变，只做挂载
+
+**不保证**
+
+- 挂载位置一定存在
+
+**失败返回**
+
+- 原样KnowledgeMatchStructureTree
